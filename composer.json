@@ -1,0 +1,21 @@
+{
+    "name": "delatbabel/apisecurity",
+    "description": "API Security Helpers.",
+    "keywords": ["api", "security", "nonce", "key", "signature", "sign"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Del",
+            "email": "del@babel.com.au"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Delatbabel\\ApiSecurity\\": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
