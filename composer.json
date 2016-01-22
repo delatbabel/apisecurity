@@ -1,7 +1,7 @@
 {
     "name": "delatbabel/apisecurity",
     "description": "API Security Helpers.",
-    "keywords": ["api", "security", "nonce", "key", "signature", "sign"],
+    "keywords": ["laravel", "api", "security", "nonce", "key", "signature", "sign"],
     "license": "MIT",
     "authors": [
         {
