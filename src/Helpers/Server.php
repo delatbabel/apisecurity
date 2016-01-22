@@ -30,6 +30,8 @@ class Server
     /**
      * Verify a signature on the request URL, the request data and the key.
      *
+     * An exception is thrown if the signature did not verify or was not present.
+     *
      * @param string $request_url
      * @param array  $request_data
      * @param Key    $key
