@@ -5,6 +5,8 @@ other HTTP based APIs, where the authentication process typically involves a sha
 secret key, perhaps a public/private key pair, rather than username/password/cookie
 type security more commonly found in web applications.
 
+This is under heavy construction and everything is likely to change at short notice.
+
 ## Features
 
 * Building cryptographic nonces
@@ -27,7 +29,7 @@ composer require delatbabel/apisecurity
 Once that is done, run the composer update command:
 
 ```
-    composer update
+composer update
 ```
 
 ## Examples
