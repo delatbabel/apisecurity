@@ -27,7 +27,6 @@ use Delatbabel\ApiSecurity\Generators\Key;
  */
 class Server
 {
-
     /**
      * Verify a signature on the request URL, the request data and the key.
      *
