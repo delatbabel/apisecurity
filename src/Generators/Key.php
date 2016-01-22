@@ -16,7 +16,13 @@ namespace Delatbabel\ApiSecurity\Generators;
  * ### Example
  *
  * <code>
+ * // Initialise
  * $keypair = new Key();
+ *
+ * // Generate a new key pair
+ * $keypair->generate();
+ *
+ * // Fetch the text versions of the public and private keys.
  * $public_key = $keypair->getPublicKey();
  * $private_key = $keypair->getPrivateKey();
  * </code>
@@ -116,6 +122,8 @@ class Key
         // Get the public key
         $public_key_data = openssl_pkey_get_details($private_key);
         $this->public_key_text = $public_key_data['key'];
+
+        return $this;
     }
 
     /**
@@ -123,12 +131,15 @@ class Key
      *
      * @param string $public_key_file
      * @param string $private_key_file
+     * @return Key provides a fluent interface
      */
     public function store($public_key_file, $private_key_file)
     {
         file_put_contents($public_key_file, $this->public_key_text);
         file_put_contents($private_key_file, $this->private_key_text);
         chmod($private_key_file, 0600);
+
+        return $this;
     }
 
     /**
@@ -140,6 +151,7 @@ class Key
      *
      * @param string $public_key file name or contents
      * @param string $private_key file name or contents
+     * @return Key provides a fluent interface
      */
     public function load($public_key='', $private_key='')
     {
@@ -160,6 +172,8 @@ class Key
         } elseif (! empty($public_key)) {
             $this->public_key_text = $public_key;
         }
+
+        return $this;
     }
 
     /**

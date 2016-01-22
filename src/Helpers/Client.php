@@ -35,14 +35,14 @@ class Client
      * * cnonce -- the client generated nonce
      * * sig -- the signature, signed with the private key in $key
      *
-     * Returns the sigature, or null if there was no signature.
+     * Returns the signature, or null if there was no signature.
      *
      * @param string $request_url
      * @param array $request_data
      * @param Key $key
      * @return string|null
      */
-    protected function createSignature($request_url, array &$request_data, Key $key)
+    public function createSignature($request_url, array &$request_data, Key $key)
     {
         // Make a nonce
         $nonce = new Nonce();
