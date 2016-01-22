@@ -16,14 +16,29 @@ use Delatbabel\ApiSecurity\Generators\Key;
  *
  * Long description of class goes here.  What is this for?
  *
- * <h4>Example</h4>
+ * ### Example
  *
  * <code>
- *   // Example code goes here
+ * $key = new Key();
+ * $key->load($public_key, '');
+ *
+ * // Verify the signature.  This will thrown an exception if there is
+ * // no signature or if the signature did not verify.
+ * $server = new Server();
+ * try {
+ *     $server->verifySignature($request_url, $request_data, $key);
+ * } catch (SignatureException $e) {
+ *     // fail
+ * }
  * </code>
  *
- * @see  ...
- * @link ...
+ * ### TODO
+ *
+ * Function to create nonces.
+ *
+ * Function to verify HMACs.
+ *
+ * @see Client.
  */
 class Server
 {

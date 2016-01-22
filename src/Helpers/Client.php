@@ -16,7 +16,7 @@ use Delatbabel\ApiSecurity\Generators\Nonce;
  *
  * Helper functions for API clients
  *
- * Example
+ * ### Example
  *
  * <code>
  * $key = new Key();
@@ -29,6 +29,14 @@ use Delatbabel\ApiSecurity\Generators\Nonce;
  * $client = new Client();
  * $client->createSignature($request_url, $request_data, $key);
  * </code>
+ *
+ * ### TODO
+ *
+ * Separate function to create nonces.
+ *
+ * Function to create HMACs.
+ *
+ * @see Server
  */
 class Client
 {
