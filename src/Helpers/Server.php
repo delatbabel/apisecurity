@@ -34,9 +34,15 @@ use Delatbabel\ApiSecurity\Generators\Key;
  *
  * ### TODO
  *
- * Function to create nonces.
+ * Function to create server side nonces.
  *
  * Function to verify HMACs.
+ *
+ * Function to validate nonces:
+ *
+ * * Server side nonce must have been used exactly once.
+ * * Client side nonce must not have been used before.
+ * * Nonces can be cached and cache can time out.
  *
  * @see Client.
  */
