@@ -7,6 +7,12 @@ type security more commonly found in web applications.
 
 Under Construction
 
+## Installing
+
+```
+composer require delatbabel/apisecurity
+```
+
 ## Example Use Cases
 
 * Building cryptographic nonces

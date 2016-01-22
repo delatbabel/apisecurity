@@ -48,7 +48,6 @@ class Key
     {
         $this->setLength($length);
         $this->setType($type);
-        $this->generate();
     }
 
     /**
@@ -103,6 +102,7 @@ class Key
     public function generate()
     {
         // Make a new key pair
+        /** @var resource $private_key */
         $private_key = openssl_pkey_new([
             'private_key_bits'      => 2048,
             'private_key_type'      => OPENSSL_KEYTYPE_RSA,
@@ -129,6 +129,63 @@ class Key
         file_put_contents($public_key_file, $this->public_key_text);
         file_put_contents($private_key_file, $this->private_key_text);
         chmod($private_key_file, 0600);
+    }
+
+    /**
+     * Load the keys from files or strings.
+     *
+     * It's not required to provide both the private and the public
+     * key. The key will be initialised with whichever or both keys
+     * are provided.
+     *
+     * @param string $public_key file name or contents
+     * @param string $private_key file name or contents
+     */
+    public function load($public_key='', $private_key='')
+    {
+        // If the private key is a file name then convert it to
+        // the contents of the file (which should be an RSA private
+        // key in PEM format)
+        if (file_exists($private_key)) {
+            $this->private_key_text = file_get_contents($private_key);
+        } elseif (! empty($private_key)) {
+            $this->private_key_text = $private_key;
+        }
+
+        // If the public key is a file name then convert it to
+        // the contents of the file (which should be an RSA public
+        // key in PEM format)
+        if (file_exists($public_key)) {
+            $this->public_key_text = file_get_contents($public_key);
+        } elseif (! empty($public_key)) {
+            $this->public_key_text = $public_key;
+        }
+    }
+
+    /**
+     * Sign some string and return the base64 encoded signature.
+     *
+     * Returns null if there was a problem signing the data (key not valid, etc)
+     *
+     * @param string $data_to_sign
+     * @return null|string
+     */
+    public function sign($data_to_sign)
+    {
+        // Get the private key resource from the private key data
+        $private_key = openssl_pkey_get_private($this->private_key_text);
+        if ($private_key === false) {
+            return null;
+        }
+
+        // Create the base64 encoded copy of the signature.
+        $signature = '';
+        if (! openssl_sign($data_to_sign, $signature, $private_key, OPENSSL_ALGO_SHA256)) {
+            return null;
+        }
+        $base64_signature = base64_encode($signature);
+
+        return $base64_signature;
     }
 
     /**
