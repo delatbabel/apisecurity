@@ -33,7 +33,7 @@ class Server
      * @param string $request_url
      * @param array  $request_data
      * @param Key    $key
-     * @return bool
+     * @return void
      * @throws SignatureException
      */
     public function verifySignature($request_url, array $request_data, Key $key)
@@ -50,6 +50,9 @@ class Server
         $data_to_verify = $request_url . '?' . $query_string;
 
         // Verify the signature
-        return $key->verify($data_to_verify, $base64_signature);
+        $verify = $key->verify($data_to_verify, $base64_signature);
+        if (! $verify) {
+            throw new SignatureException('The signature on the request data did not verify');
+        }
     }
 }
