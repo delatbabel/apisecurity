@@ -7,6 +7,7 @@
 
 namespace Delatbabel\ApiSecurity\Generators;
 
+use Delatbabel\ApiSecurity\Exceptions\SignatureException;
 
 /**
  * Class Key
@@ -200,6 +201,37 @@ class Key
         $base64_signature = base64_encode($signature);
 
         return $base64_signature;
+    }
+
+    /**
+     * Verify the signature of some data.
+     *
+     * @param string $data_to_verify
+     * @param string $base64_signature
+     * @return bool
+     * @throws SignatureException
+     */
+    public function verify($data_to_verify, $base64_signature)
+    {
+        // Decode the signature
+        $signature = base64_decode($base64_signature);
+
+        // Get the public key, used for verifying signatures
+        $public_key = $this->public_key_text;
+
+        // Verify the signature
+        $signature_verify = openssl_verify($data_to_verify, $signature, $public_key, OPENSSL_ALGO_SHA256);
+        switch ($signature_verify) {
+            case 1:
+                return true;
+                break;
+            case 0:
+                return false;
+                break;
+            case -1:
+                throw new SignatureException('There was an error verifying the signature');
+                break;
+        }
     }
 
     /**

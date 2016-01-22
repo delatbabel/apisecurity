@@ -19,11 +19,16 @@ use Delatbabel\ApiSecurity\Generators\Nonce;
  * Example
  *
  * <code>
- *   // Example code goes here
- * </code>
+ * $key = new Key();
+ * $key->load('', $private_key_data);
  *
- * @see  ...
- * @link ...
+ * // Get the data to be signed.
+ * $request_url = $this->getEndpoint();
+ *
+ * // Sign the data
+ * $client = new Client();
+ * $client->createSignature($request_url, $request_data, $key);
+ * </code>
  */
 class Client
 {
