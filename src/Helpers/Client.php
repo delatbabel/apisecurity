@@ -32,8 +32,6 @@ use Delatbabel\ApiSecurity\Generators\Nonce;
  *
  * ### TODO
  *
- * Separate function to create nonces.
- *
  * Function to create HMACs.
  *
  * @see Server
@@ -42,6 +40,9 @@ class Client
 {
     /** @var  Key -- must contain at least the client side private key for creating signatures */
     protected $key;
+
+    /** @var  Nonce client side nonce */
+    protected $cnonce;
 
     /**
      * Client constructor.
@@ -70,7 +71,33 @@ class Client
     }
 
     /**
+     * Generate a one time only client nonce.
+     *
+     * @return string
+     */
+    public function createNonce()
+    {
+        // Make a nonce
+        $this->cnonce = new Nonce();
+        return $this->cnonce->getNonce();
+    }
+
+    /**
      * Construct a signature for a request signature, or return null if there is none.
+     *
+     * Creating a signature requires knowledge of the client's private key.  The client
+     * can send the signature to the server without the server having knowledge of the
+     * client's private key.  The server only needs to know the public key that relates
+     * to the private key.  See the Key class for generating public/private key pairs.
+     *
+     * A client generated nonce is also created and added to the request data.  This
+     * *should* (but does not have to be) checked and verified on the server.  The nonce
+     * is used to ensure that no two requests have the same data even if the endpoint
+     * and request data are the same.
+     *
+     * The request data *should* (but does not have to) contain a server generated nonce.
+     * The server generated nonce should be used exactly once -- generated on the server,
+     * used by the client and then discarded.
      *
      * Adds the following array entities to $request_data:
      *
@@ -85,8 +112,7 @@ class Client
     public function createSignature(array &$request_data)
     {
         // Make a nonce
-        $nonce = new Nonce();
-        $request_data['cnonce'] = $nonce->getNonce();
+        $request_data['cnonce'] = $this->createNonce();
 
         // Get the data to be signed.
         $data_to_sign = http_build_query($request_data);
