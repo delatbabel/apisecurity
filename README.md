@@ -5,7 +5,8 @@ other HTTP based APIs, where the authentication process typically involves a sha
 secret key, perhaps a public/private key pair, rather than username/password/cookie
 type security more commonly found in web applications.
 
-This is under heavy construction and everything is likely to change at short notice.
+I am getting close to an 1.0 release -- more functionality is to be added but the
+interface should be reasonably stable now.
 
 ## Features
 
@@ -16,8 +17,6 @@ This is under heavy construction and everything is likely to change at short not
 
 ## TODO
 
-* Server side nonces
-* HMAC generation and verification
 * Nonce verification, using a cache store
 
 ## Installing
@@ -34,13 +33,34 @@ composer update
 
 ## Examples
 
+### Simple client or server side nonce generation
+
 ```php
 // Generate a nonce
 $nonce = new Nonce();
 echo "Nonce is " . $nonce->getNonce() . "\n";
 ```
 
-There are many other examples of use in the class docblocks.
+### Signature Calculation
+
+```php
+$client = new Client();
+// $private_key_data can be the file name of the private key or the text of the key itself.
+// This should be known only to the client.
+$client->setPrivateKey($private_key_data);
+$client->createSignature($request_data);
+```
+
+### Signature Verification
+
+```php
+$server = new Server();
+// $public_key can be the file name of the client's public key or the text of the key itself.
+$server->setPublicKey($public_key);
+$server->verifySignature($request_data);
+```
+
+Take a look at the class docblocks and the test cases for more examples of use.
 
 ## Appropriate Frameworks
 
