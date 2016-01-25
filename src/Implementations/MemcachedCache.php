@@ -27,6 +27,8 @@ class MemcachedCache implements CacheInterface
      * Constructor
      *
      * @param integer $expiry_time The cache expiry time in minutes.
+     * @param string $server name or IP address of the memcached server
+     * @param integer $port the port number of the memcached server.
      */
     public function __construct($expiry_time = 60, $server='localhost', $port=11211)
     {
