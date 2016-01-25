@@ -102,6 +102,50 @@ class Key
     }
 
     /**
+     * Set the public key text
+     *
+     * @param string $key
+     * @return Key provides a fluent interface.
+     */
+    public function setPublicKey($key)
+    {
+        $this->public_key_text = $key;
+        return $this;
+    }
+
+    /**
+     * Get the public key text
+     *
+     * @return string
+     */
+    public function getPublicKey()
+    {
+        return $this->public_key_text;
+    }
+
+    /**
+     * Set the private key text
+     *
+     * @param string $key
+     * @return Key provides a fluent interface.
+     */
+    public function setPrivateKey($key)
+    {
+        $this->private_key_text = $key;
+        return $this;
+    }
+
+    /**
+     * Get the private key text
+     *
+     * @return string
+     */
+    public function getPrivateKey()
+    {
+        return $this->private_key_text;
+    }
+
+    /**
      * Create the key pair.
      *
      * @return Key provides a fluent interface
@@ -229,28 +273,9 @@ class Key
                 return false;
                 break;
             case -1:
+            default:
                 throw new SignatureException('There was an error verifying the signature');
                 break;
         }
-    }
-
-    /**
-     * Get the public key text
-     *
-     * @return string
-     */
-    public function getPublicKey()
-    {
-        return $this->public_key_text;
-    }
-
-    /**
-     * Get the private key text
-     *
-     * @return string
-     */
-    public function getPrivateKey()
-    {
-        return $this->private_key_text;
     }
 }
