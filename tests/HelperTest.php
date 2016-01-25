@@ -192,6 +192,7 @@ class HelperTest extends PHPUnit_Framework_TestCase
         $server->setSharedKey($this->sharedkey);
 
         $server->verifyHMAC($data);
+        $this->assertTrue(true);
 
         // Can't verify without signature
         unset($data['hmac']);
