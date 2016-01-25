@@ -7,3 +7,5 @@ dirlist.vendor
 documents/main/
 composer.lock
 documents/
+tests/data/private.pem
+tests/data/public.pem

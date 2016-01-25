@@ -10,6 +10,7 @@ use Delatbabel\ApiSecurity\Helpers\Client;
 use Delatbabel\ApiSecurity\Helpers\Server;
 use Delatbabel\ApiSecurity\Implementations\MemcachedCache;
 use Delatbabel\ApiSecurity\Exceptions\NonceException;
+use Delatbabel\ApiSecurity\Exceptions\SignatureException;
 
 /**
  * Class HelperTest
@@ -132,6 +133,43 @@ class HelperTest extends PHPUnit_Framework_TestCase
         $server->setPublicKey($this->pubkey);
 
         $server->verifySignature($data);
+        $this->assertTrue(true);
+
+        // Can't verify without signature
+        unset($data['sig']);
+        try {
+            $server->verifySignature($data);
+            $this->assertTrue(false);
+        } catch (SignatureException $e) {
+            $this->assertTrue(true);
+        }
+
+        // Can't verify garbage signature
+        $data['sig'] = 'Garbage';
+        try {
+            $server->verifySignature($data);
+            $this->assertTrue(false);
+        } catch (SignatureException $e) {
+            $this->assertTrue(true);
+        }
+
+        // Can't verify without cnonce
+        $data = [
+            'fox'       => 'quick',
+            'colour'    => 'brown',
+            'dog'       => 'lazy',
+        ];
+
+        $signature = $client->createSignature($data);
+        $this->assertNotEmpty($signature);
+
+        unset($data['cnonce']);
+        try {
+            $server->verifySignature($data);
+            $this->assertTrue(false);
+        } catch (SignatureException $e) {
+            $this->assertTrue(true);
+        }
     }
 
     public function testHmacAndVerify()
@@ -154,6 +192,41 @@ class HelperTest extends PHPUnit_Framework_TestCase
         $server->setSharedKey($this->sharedkey);
 
         $server->verifyHMAC($data);
-    }
 
+        // Can't verify without signature
+        unset($data['hmac']);
+        try {
+            $server->verifyHMAC($data);
+            $this->assertTrue(false);
+        } catch (SignatureException $e) {
+            $this->assertTrue(true);
+        }
+
+        // Can't verify garbage signature
+        $data['hmac'] = 'Garbage';
+        try {
+            $server->verifyHMAC($data);
+            $this->assertTrue(false);
+        } catch (SignatureException $e) {
+            $this->assertTrue(true);
+        }
+
+        // Can't verify without cnonce
+        $data = [
+            'fox'       => 'quick',
+            'colour'    => 'brown',
+            'dog'       => 'lazy',
+        ];
+
+        $signature = $client->createHMAC($data);
+        $this->assertNotEmpty($signature);
+
+        unset($data['cnonce']);
+        try {
+            $server->verifyHMAC($data);
+            $this->assertTrue(false);
+        } catch (SignatureException $e) {
+            $this->assertTrue(true);
+        }
+    }
 }
