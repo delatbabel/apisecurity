@@ -48,17 +48,45 @@ use Delatbabel\ApiSecurity\Generators\Key;
  */
 class Server
 {
+    /** @var  Key -- must contain at least the client side public key for verifying signatures */
+    protected $key;
+
+    /**
+     * Server constructor.
+     *
+     * @param Key|null $key
+     */
+    public function __construct(Key $key=null)
+    {
+        if (empty($key)) {
+            $this->key = new Key();
+        } else {
+            $this->key = $key;
+        }
+    }
+
+    /**
+     * Set the public key text
+     *
+     * @param string $key
+     * @return Server provides a fluent interface.
+     */
+    public function setPublicKey($key)
+    {
+        $this->key->setPublicKey($key);
+        return $this;
+    }
+
     /**
      * Verify a signature on the request URL, the request data and the key.
      *
      * An exception is thrown if the signature did not verify or was not present.
      *
      * @param array  $request_data
-     * @param Key    $key
      * @return void
      * @throws SignatureException
      */
-    public function verifySignature(array $request_data, Key $key)
+    public function verifySignature(array $request_data)
     {
         if (empty($request_data['sig'])) {
             throw new SignatureException('No signature was present on the request data');
@@ -71,7 +99,7 @@ class Server
         $data_to_verify = http_build_query($request_data);
 
         // Verify the signature
-        $verify = $key->verify($data_to_verify, $base64_signature);
+        $verify = $this->key->verify($data_to_verify, $base64_signature);
         if (! $verify) {
             throw new SignatureException('The signature on the request data did not verify');
         }

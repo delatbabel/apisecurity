@@ -40,6 +40,35 @@ use Delatbabel\ApiSecurity\Generators\Nonce;
  */
 class Client
 {
+    /** @var  Key -- must contain at least the client side private key for creating signatures */
+    protected $key;
+
+    /**
+     * Client constructor.
+     *
+     * @param Key|null $key
+     */
+    public function __construct(Key $key=null)
+    {
+        if (empty($key)) {
+            $this->key = new Key();
+        } else {
+            $this->key = $key;
+        }
+    }
+
+    /**
+     * Set the private key text
+     *
+     * @param string $key
+     * @return Client provides a fluent interface.
+     */
+    public function setPrivateKey($key)
+    {
+        $this->key->setPrivateKey($key);
+        return $this;
+    }
+
     /**
      * Construct a signature for a request signature, or return null if there is none.
      *
@@ -51,10 +80,9 @@ class Client
      * Returns the signature, or null if there was no signature.
      *
      * @param array $request_data
-     * @param Key $key
      * @return string|null
      */
-    public function createSignature(array &$request_data, Key $key)
+    public function createSignature(array &$request_data)
     {
         // Make a nonce
         $nonce = new Nonce();
@@ -64,7 +92,7 @@ class Client
         $data_to_sign = http_build_query($request_data);
 
         // Create the base64 encoded copy of the signature.
-        $base64_signature = $key->sign($data_to_sign);
+        $base64_signature = $this->key->sign($data_to_sign);
         if (! empty($base64_signature)) {
             $request_data['sig'] = $base64_signature;
         }
