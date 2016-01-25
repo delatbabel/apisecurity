@@ -154,7 +154,7 @@ class Server
      * @param string $ip_address
      * @throws NonceException
      */
-    public function verifyServerNonce($snonce, $ip_address)
+    public function verifyServerNonce($snonce, $ip_address='127.0.0.1')
     {
         $snonce_cache_key = 'snonce__' . $snonce;
 
@@ -181,7 +181,7 @@ class Server
      * @param string $snonce The server nonce key.
      * @param string $ip_address
      */
-    public function recordServerNonce($snonce, $ip_address)
+    public function recordServerNonce($snonce, $ip_address='127.0.0.1')
     {
         $snonce_cache_key = 'snonce__' . $snonce;
 
@@ -211,10 +211,12 @@ class Server
      * An exception is thrown if the signature did not verify or was not present.
      *
      * @param array  $request_data
+     * @param string $ip_address
      * @return void
      * @throws SignatureException
+     * @throws NonceException
      */
-    public function verifySignature(array $request_data)
+    public function verifySignature(array $request_data, $ip_address='127.0.0.1')
     {
         if (empty($request_data['sig'])) {
             throw new SignatureException('No signature was present on the request data');
@@ -230,6 +232,19 @@ class Server
         $verify = $this->key->verify($data_to_verify, $base64_signature);
         if (! $verify) {
             throw new SignatureException('The signature on the request data did not verify');
+        }
+
+        // Verify the client nonce if present.  This will normally be created at
+        // the time that the signature is created.
+        if (empty($request_data['cnonce'])) {
+            throw new NonceException('No client nonce was present in signature verification');
+        }
+        $this->verifyClientNonce($request_data['cnonce']);
+
+        // Verify the server nonce if present.  Note that the client must request
+        // this.
+        if (! empty($request_data['snonce'])) {
+            $this->verifyServerNonce($request_data['snonce'], $ip_address);
         }
     }
 
@@ -249,10 +264,12 @@ class Server
      * An exception is thrown if the signature did not verify or was not present.
      *
      * @param array $request_data
+     * @param string $ip_address
      * @return void
      * @throws SignatureException
+     * @throws NonceException
      */
-    public function verifyHMAC(array $request_data)
+    public function verifyHMAC(array $request_data, $ip_address='127.0.0.1')
     {
         if (empty($request_data['hmac'])) {
             throw new SignatureException('No HMAC was present on the request data');
@@ -270,6 +287,19 @@ class Server
         $verify = hash_equals($calculated_hmac, $supplied_hmac);
         if (! $verify) {
             throw new SignatureException('The HMAC on the request data did not verify');
+        }
+
+        // Verify the client nonce if present.  This will normally be created at
+        // the time that the HMAC is created.
+        if (empty($request_data['cnonce'])) {
+            throw new NonceException('No client nonce was present in signature verification');
+        }
+        $this->verifyClientNonce($request_data['cnonce']);
+
+        // Verify the server nonce if present.  Note that the client must request
+        // this.
+        if (! empty($request_data['snonce'])) {
+            $this->verifyServerNonce($request_data['snonce'], $ip_address);
         }
     }
 }
