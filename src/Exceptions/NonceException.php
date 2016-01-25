@@ -1,6 +1,6 @@
 <?php
 /**
- * Class SignatureException
+ * Class NonceException
  *
  * @author del
  */
@@ -9,12 +9,12 @@ namespace Delatbabel\ApiSecurity\Exceptions;
 
 
 /**
- * Class SignatureException
+ * Class NonceException
  *
  * This exception is used to indicate errors generating or verifying
- * signatures.
+ * nonces.
  */
-class SignatureException extends \Exception
+class NonceException extends \Exception
 {
 
 }

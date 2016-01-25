@@ -7,9 +7,11 @@
 
 namespace Delatbabel\ApiSecurity\Helpers;
 
+use Delatbabel\ApiSecurity\Exceptions\NonceException;
 use Delatbabel\ApiSecurity\Exceptions\SignatureException;
 use Delatbabel\ApiSecurity\Generators\Key;
 use Delatbabel\ApiSecurity\Generators\Nonce;
+use Delatbabel\ApiSecurity\Interfaces\CacheInterface;
 
 if (! function_exists('hash_equals')) {
     function hash_equals($str1, $str2) {
@@ -43,20 +45,15 @@ if (! function_exists('hash_equals')) {
  * }
  * </code>
  *
- * ### TODO
- *
- * Function to validate nonces:
- *
- * * Server side nonce must have been used exactly once.
- * * Client side nonce must not have been used before.
- * * Nonces can be cached and cache can time out.
- *
  * @see Client.
  */
 class Server
 {
     /** @var  Key -- must contain at least the client side public key for verifying signatures */
     protected $key;
+
+    /** @var  CacheInterface -- mechanism to store and retrieve from cache */
+    protected $cache;
 
     /** @var  Nonce server side nonce */
     protected $snonce;
@@ -68,14 +65,17 @@ class Server
      * Server constructor.
      *
      * @param Key|null $key
+     * @param CacheInterface|null $cache
      */
-    public function __construct(Key $key=null)
+    public function __construct(Key $key=null, CacheInterface $cache=null)
     {
         if (empty($key)) {
             $this->key = new Key();
         } else {
             $this->key = $key;
         }
+
+        $this->cache = $cache;
     }
 
     /**
@@ -105,13 +105,91 @@ class Server
     /**
      * Generate a one time only server nonce.
      *
+     * @param string $ip_address The client IP address where this nonce will be sent
      * @return string
      */
-    public function createNonce()
+    public function createNonce($ip_address='127.0.0.1')
     {
         // Make a nonce
         $this->snonce = new Nonce();
-        return $this->snonce->getNonce();
+        $snonce = $this->snonce->getNonce();
+        $this->recordServerNonce($snonce, $ip_address);
+        return $snonce;
+    }
+
+    /**
+     * Verifies and stores a client nonce
+     *
+     * Throws a NonceException if the nonce does not verify (has been used).
+     *
+     * @param string $cnonce The client nonce key.
+     * @throws NonceException
+     */
+    public function verifyClientNonce($cnonce)
+    {
+        $cnonce_cache_key = 'cnonce__' . $cnonce;
+
+        if (empty($this->cache)) {
+            return;
+        }
+
+        $cnonce_data = $this->cache->get($cnonce_cache_key);
+        if ($cnonce_data == 'USED') {
+            throw new NonceException('That nonce has already been used');
+        }
+
+        $this->cache->add($cnonce_cache_key, 'USED');
+    }
+
+    /**
+     * Verifies a server nonce
+     *
+     * This ensures that the server nonce has been used once and once only,
+     * and only by the same IP address that it was provided to.
+     *
+     * Throws a NonceException if the nonce does not verify (has been used
+     * elsewhere or has never been used).
+     *
+     * @param string $snonce The server nonce key.
+     * @param string $ip_address
+     * @throws NonceException
+     */
+    public function verifyServerNonce($snonce, $ip_address)
+    {
+        $snonce_cache_key = 'snonce__' . $snonce;
+
+        if (empty($this->cache)) {
+            return;
+        }
+
+        $snonce_data = $this->cache->get($snonce_cache_key);
+        if (empty($snonce_data)) {
+            throw new NonceException('That nonce has been not been generated');
+        }
+        if ($snonce_data !== $ip_address) {
+            throw new NonceException('That nonce has been used elsewhere');
+        }
+
+        $this->cache->add($snonce_cache_key, 'USED');
+    }
+
+    /**
+     * Records a server nonce
+     *
+     * This records a server nonce after creation.
+     *
+     * @param string $snonce The server nonce key.
+     * @param string $ip_address
+     */
+    public function recordServerNonce($snonce, $ip_address)
+    {
+        $snonce_cache_key = 'snonce__' . $snonce;
+
+        if (empty($this->cache)) {
+            return;
+        }
+
+        $this->cache->add($snonce_cache_key, $ip_address);
     }
 
     /**

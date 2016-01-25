@@ -8,6 +8,8 @@
 use Delatbabel\ApiSecurity\Generators\Key;
 use Delatbabel\ApiSecurity\Helpers\Client;
 use Delatbabel\ApiSecurity\Helpers\Server;
+use Delatbabel\ApiSecurity\Implementations\MemcachedCache;
+use Delatbabel\ApiSecurity\Exceptions\NonceException;
 
 /**
  * Class HelperTest
@@ -45,6 +47,63 @@ class HelperTest extends PHPUnit_Framework_TestCase
         $server = new Server();
         $snonce = $server->createNonce();
         $this->assertEquals(24, strlen($snonce));
+    }
+
+    public function testVerifyServerNonce()
+    {
+        $cache = new MemcachedCache(60);
+        $server = new Server(null, $cache);
+        $snonce = $server->createNonce('1.1.1.1');
+        $this->assertEquals(24, strlen($snonce));
+
+        // Verify that it has been recorded for this IP address
+        $server->verifyServerNonce($snonce, '1.1.1.1');
+        $this->assertTrue(true);
+
+        // Cannot verify a second time.
+        try {
+            $server->verifyServerNonce($snonce, '1.1.1.1');
+            $this->assertTrue(false);
+        } catch (NonceException $e) {
+            $this->assertTrue(true);
+        }
+
+        // Cannot verify at the wrong IP address
+        try {
+            $server->verifyServerNonce($snonce, '2.2.2.2');
+            $this->assertTrue(false);
+        } catch (NonceException $e) {
+            $this->assertTrue(true);
+        }
+
+        // Cannot verify a nonsense nonce
+        try {
+            $server->verifyServerNonce('Nonsense', '2.2.2.2');
+            $this->assertTrue(false);
+        } catch (NonceException $e) {
+            $this->assertTrue(true);
+        }
+    }
+
+    public function testVerifyClientNonce()
+    {
+        $cache = new MemcachedCache(60);
+        $server = new Server(null, $cache);
+        $client = new Client();
+        $cnonce = $client->createNonce();
+        $this->assertEquals(24, strlen($cnonce));
+
+        // Verify that it is a virgin
+        $server->verifyClientNonce($cnonce);
+        $this->assertTrue(true);
+
+        // Cannot verify a second time.
+        try {
+            $server->verifyClientNonce($cnonce);
+            $this->assertTrue(false);
+        } catch (NonceException $e) {
+            $this->assertTrue(true);
+        }
     }
 
     public function testSignAndVerify()
