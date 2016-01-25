@@ -19,20 +19,14 @@ use Delatbabel\ApiSecurity\Generators\Nonce;
  * ### Example
  *
  * <code>
- * $key = new Key();
- * $key->load('', $private_key_data);
- *
  * // Get the data to be signed.
  * $request_url = $this->getEndpoint();
  *
  * // Sign the data
  * $client = new Client();
- * $client->createSignature($request_url, $request_data, $key);
+ * $client->setPrivateKey($private_key_data);
+ * $client->createSignature($request_data);
  * </code>
- *
- * ### TODO
- *
- * Function to create HMACs.
  *
  * @see Server
  */
@@ -43,6 +37,9 @@ class Client
 
     /** @var  Nonce client side nonce */
     protected $cnonce;
+
+    /** @var  string -- shared client/server key used in HMAC calculations */
+    protected $sharedKey;
 
     /**
      * Client constructor.
@@ -71,6 +68,18 @@ class Client
     }
 
     /**
+     * Set the shared key used in generating HMACs.
+     *
+     * @param $key
+     * @return Client provides a fluent interface.
+     */
+    public function setSharedKey($key)
+    {
+        $this->sharedKey = $key;
+        return $this;
+    }
+
+    /**
      * Generate a one time only client nonce.
      *
      * @return string
@@ -83,7 +92,7 @@ class Client
     }
 
     /**
-     * Construct a signature for a request signature, or return null if there is none.
+     * Construct a request signature, or return null if there is none.
      *
      * Creating a signature requires knowledge of the client's private key.  The client
      * can send the signature to the server without the server having knowledge of the
@@ -102,7 +111,7 @@ class Client
      * Adds the following array entities to $request_data:
      *
      * * cnonce -- the client generated nonce
-     * * sig -- the signature, signed with the private key in $key
+     * * sig -- the signature, signed with the private made by setPrivateKey
      *
      * Returns the signature, or null if there was no signature.
      *
@@ -124,5 +133,45 @@ class Client
         }
 
         return $base64_signature;
+    }
+
+    /**
+     * Construct a HMAC for a request.
+     *
+     * Creating a HMAC for a request requires knowledge of a key that is shared between
+     * the client and server and should not be disclosed to any third party.
+     *
+     * A client generated nonce is also created and added to the request data.  This
+     * *should* (but does not have to be) checked and verified on the server.  The nonce
+     * is used to ensure that no two requests have the same data even if the endpoint
+     * and request data are the same.
+     *
+     * The request data *should* (but does not have to) contain a server generated nonce.
+     * The server generated nonce should be used exactly once -- generated on the server,
+     * used by the client and then discarded.
+     *
+     * Adds the following array entities to $request_data:
+     *
+     * * cnonce -- the client generated nonce
+     * * hmac -- the hmac, created with the shared key made by setSharedKey()
+     *
+     * Returns the HMAC
+     *
+     * @param array $request_data
+     * @return string
+     */
+    public function createHMAC(array &$request_data)
+    {
+        // Make a nonce
+        $request_data['cnonce'] = $this->createNonce();
+
+        // Get the data to be signed.
+        $data_to_sign = http_build_query($request_data);
+
+        // Create the base64 encoded copy of the HMAC.
+        $base64_hmac = base64_encode(hash_hmac("sha256", $data_to_sign, $this->sharedKey, true));
+        $request_data['hmac'] = $base64_hmac;
+
+        return $base64_hmac;
     }
 }

@@ -104,12 +104,19 @@ class Key
     /**
      * Set the public key text
      *
-     * @param string $key
+     * @param string $public_key
      * @return Key provides a fluent interface.
      */
-    public function setPublicKey($key)
+    public function setPublicKey($public_key)
     {
-        $this->public_key_text = $key;
+        // If the public key is a file name then convert it to
+        // the contents of the file (which should be an RSA public
+        // key in PEM format)
+        if (file_exists($public_key)) {
+            $this->public_key_text = file_get_contents($public_key);
+        } elseif (! empty($public_key)) {
+            $this->public_key_text = $public_key;
+        }
         return $this;
     }
 
@@ -126,12 +133,19 @@ class Key
     /**
      * Set the private key text
      *
-     * @param string $key
+     * @param string $private_key
      * @return Key provides a fluent interface.
      */
-    public function setPrivateKey($key)
+    public function setPrivateKey($private_key)
     {
-        $this->private_key_text = $key;
+        // If the private key is a file name then convert it to
+        // the contents of the file (which should be an RSA private
+        // key in PEM format)
+        if (file_exists($private_key)) {
+            $this->private_key_text = file_get_contents($private_key);
+        } elseif (! empty($private_key)) {
+            $this->private_key_text = $private_key;
+        }
         return $this;
     }
 
