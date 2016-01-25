@@ -12,6 +12,10 @@ namespace Delatbabel\ApiSecurity\Interfaces;
  *
  * Defines the interface that applications need to provide to ApiSecurity for setting
  * and getting items from a cache.
+ *
+ * ### Example
+ *
+ * For examples on implementing this, see the sample implementations in ../Implementations
  */
 interface CacheInterface
 {
