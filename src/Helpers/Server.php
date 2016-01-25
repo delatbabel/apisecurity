@@ -53,13 +53,12 @@ class Server
      *
      * An exception is thrown if the signature did not verify or was not present.
      *
-     * @param string $request_url
      * @param array  $request_data
      * @param Key    $key
      * @return void
      * @throws SignatureException
      */
-    public function verifySignature($request_url, array $request_data, Key $key)
+    public function verifySignature(array $request_data, Key $key)
     {
         if (empty($request_data['sig'])) {
             throw new SignatureException('No signature was present on the request data');
@@ -69,8 +68,7 @@ class Server
 
         // Get the data that needs to be signed.
         unset($request_data['sig']);
-        $query_string = http_build_query($request_data);
-        $data_to_verify = $request_url . '?' . $query_string;
+        $data_to_verify = http_build_query($request_data);
 
         // Verify the signature
         $verify = $key->verify($data_to_verify, $base64_signature);

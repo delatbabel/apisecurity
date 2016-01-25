@@ -50,20 +50,18 @@ class Client
      *
      * Returns the signature, or null if there was no signature.
      *
-     * @param string $request_url
      * @param array $request_data
      * @param Key $key
      * @return string|null
      */
-    public function createSignature($request_url, array &$request_data, Key $key)
+    public function createSignature(array &$request_data, Key $key)
     {
         // Make a nonce
         $nonce = new Nonce();
         $request_data['cnonce'] = $nonce->getNonce();
 
         // Get the data to be signed.
-        $query_string = http_build_query($request_data);
-        $data_to_sign = $request_url . '?' . $query_string;
+        $data_to_sign = http_build_query($request_data);
 
         // Create the base64 encoded copy of the signature.
         $base64_signature = $key->sign($data_to_sign);
