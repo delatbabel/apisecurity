@@ -5,7 +5,7 @@
  * @author del
  */
 
-use Delatbabel\ApiSecurity\Generators\Key;
+use Delatbabel\ApiSecurity\Generators\KeyPair;
 use Delatbabel\ApiSecurity\Helpers\Client;
 use Delatbabel\ApiSecurity\Helpers\Server;
 use Delatbabel\ApiSecurity\Implementations\MemcachedCache;
@@ -109,7 +109,7 @@ class HelperTest extends PHPUnit_Framework_TestCase
 
     public function testSignAndVerify()
     {
-        $key = new Key();
+        $key = new KeyPair();
         $key->generate();
         $key->store($this->pubkey, $this->privkey);
         $this->assertTrue(file_exists($this->pubkey));
@@ -226,7 +226,7 @@ class HelperTest extends PHPUnit_Framework_TestCase
         try {
             $server->verifyHMAC($data);
             $this->assertTrue(false);
-        } catch (SignatureException $e) {
+        } catch (NonceException $e) {
             $this->assertTrue(true);
         }
     }

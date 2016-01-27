@@ -7,6 +7,7 @@
 
 namespace Delatbabel\ApiSecurity\Helpers;
 
+use Delatbabel\ApiSecurity\Generators\KeyPair;
 use Delatbabel\ApiSecurity\Generators\Key;
 use Delatbabel\ApiSecurity\Generators\Nonce;
 
@@ -32,7 +33,7 @@ use Delatbabel\ApiSecurity\Generators\Nonce;
  */
 class Client
 {
-    /** @var  Key -- must contain at least the client side private key for creating signatures */
+    /** @var  KeyPair -- must contain at least the client side private key for creating signatures */
     protected $key;
 
     /** @var  Nonce client side nonce */
@@ -44,12 +45,12 @@ class Client
     /**
      * Client constructor.
      *
-     * @param Key|null $key
+     * @param KeyPair|null $key
      */
-    public function __construct(Key $key=null)
+    public function __construct(KeyPair $key=null)
     {
         if (empty($key)) {
-            $this->key = new Key();
+            $this->key = new KeyPair();
         } else {
             $this->key = $key;
         }
@@ -97,7 +98,7 @@ class Client
      * Creating a signature requires knowledge of the client's private key.  The client
      * can send the signature to the server without the server having knowledge of the
      * client's private key.  The server only needs to know the public key that relates
-     * to the private key.  See the Key class for generating public/private key pairs.
+     * to the private key.  See the KeyPair class for generating public/private key pairs.
      *
      * A client generated nonce is also created and added to the request data.  This
      * *should* (but does not have to be) checked and verified on the server.  The nonce
@@ -168,8 +169,12 @@ class Client
         // Get the data to be signed.
         $data_to_sign = http_build_query($request_data);
 
-        // Create the base64 encoded copy of the HMAC.
-        $base64_hmac = base64_encode(hash_hmac("sha256", $data_to_sign, $this->sharedKey, true));
+        // Create the key
+        $sharedKey = new Key();
+        $sharedKey->setSharedKey($this->sharedKey);
+
+        // Create the signature.
+        $base64_hmac = $sharedKey->sign($data_to_sign);
         $request_data['hmac'] = $base64_hmac;
 
         return $base64_hmac;

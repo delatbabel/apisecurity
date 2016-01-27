@@ -9,22 +9,10 @@ namespace Delatbabel\ApiSecurity\Helpers;
 
 use Delatbabel\ApiSecurity\Exceptions\NonceException;
 use Delatbabel\ApiSecurity\Exceptions\SignatureException;
+use Delatbabel\ApiSecurity\Generators\KeyPair;
 use Delatbabel\ApiSecurity\Generators\Key;
 use Delatbabel\ApiSecurity\Generators\Nonce;
 use Delatbabel\ApiSecurity\Interfaces\CacheInterface;
-
-if (! function_exists('hash_equals')) {
-    function hash_equals($str1, $str2) {
-        if (strlen($str1) != strlen($str2)) {
-            return false;
-        } else {
-            $res = $str1 ^ $str2;
-            $ret = 0;
-            for ($i = strlen($res) - 1; $i >= 0; $i--) $ret |= ord($res[$i]);
-            return !$ret;
-        }
-    }
-}
 
 /**
  * Class Server
@@ -49,8 +37,8 @@ if (! function_exists('hash_equals')) {
  */
 class Server
 {
-    /** @var  Key -- must contain at least the client side public key for verifying signatures */
-    protected $key;
+    /** @var  KeyPair -- must contain at least the client side public key for verifying signatures */
+    protected $keypair;
 
     /** @var  CacheInterface -- mechanism to store and retrieve from cache */
     protected $cache;
@@ -64,15 +52,15 @@ class Server
     /**
      * Server constructor.
      *
-     * @param Key|null $key
+     * @param KeyPair|null        $keypair
      * @param CacheInterface|null $cache
      */
-    public function __construct(Key $key=null, CacheInterface $cache=null)
+    public function __construct(KeyPair $keypair=null, CacheInterface $cache=null)
     {
-        if (empty($key)) {
-            $this->key = new Key();
+        if (empty($keypair)) {
+            $this->keypair = new KeyPair();
         } else {
-            $this->key = $key;
+            $this->keypair = $keypair;
         }
 
         $this->cache = $cache;
@@ -86,7 +74,7 @@ class Server
      */
     public function setPublicKey($key)
     {
-        $this->key->setPublicKey($key);
+        $this->keypair->setPublicKey($key);
         return $this;
     }
 
@@ -198,7 +186,7 @@ class Server
      * Verifying the signature requires knowledge of the client's public key, which
      * can be made public knowledge.  It does not require knowledge of the client's
      * private key, which should be known only to the client.  Each client should have
-     * a unique public/private key pair.  See the Key class for generating public/
+     * a unique public/private key pair.  See the KeyPair class for generating public/
      * private key pairs.
      *
      * The request data *should* contain a nonce generated on the client and it
@@ -229,7 +217,7 @@ class Server
         $data_to_verify = http_build_query($request_data);
 
         // Verify the signature
-        $verify = $this->key->verify($data_to_verify, $base64_signature);
+        $verify = $this->keypair->verify($data_to_verify, $base64_signature);
         if (! $verify) {
             throw new SignatureException('The signature on the request data did not verify');
         }
@@ -280,21 +268,23 @@ class Server
         unset($request_data['hmac']);
         $data_to_verify = http_build_query($request_data);
 
-        // Create the base64 encoded copy of the HMAC.
-        $calculated_hmac = base64_encode(hash_hmac("sha256", $data_to_verify, $this->sharedKey, true));
-
-        // Verify the HMAC
-        $verify = hash_equals($calculated_hmac, $supplied_hmac);
-        if (! $verify) {
-            throw new SignatureException('The HMAC on the request data did not verify');
-        }
-
         // Verify the client nonce if present.  This will normally be created at
         // the time that the HMAC is created.
         if (empty($request_data['cnonce'])) {
             throw new NonceException('No client nonce was present in signature verification');
         }
         $this->verifyClientNonce($request_data['cnonce']);
+
+        // Create the shared key object
+        $sharedKey = new Key();
+        $sharedKey->setSharedKey($this->sharedKey);
+
+        // Verify the signature.
+        $verify = $sharedKey->verify($data_to_verify, $supplied_hmac);
+
+        if (! $verify) {
+            throw new SignatureException('The HMAC on the request data did not verify');
+        }
 
         // Verify the server nonce if present.  Note that the client must request
         // this.

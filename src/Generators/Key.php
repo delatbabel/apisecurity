@@ -7,25 +7,35 @@
 
 namespace Delatbabel\ApiSecurity\Generators;
 
-use Delatbabel\ApiSecurity\Exceptions\SignatureException;
+if (! function_exists('hash_equals')) {
+    function hash_equals($str1, $str2) {
+        if (strlen($str1) != strlen($str2)) {
+            return false;
+        } else {
+            $res = $str1 ^ $str2;
+            $ret = 0;
+            for ($i = strlen($res) - 1; $i >= 0; $i--) $ret |= ord($res[$i]);
+            return !$ret;
+        }
+    }
+}
 
 /**
  * Class Key
  *
- * Handles the generation of public / private key pairs.
+ * Handles the generation of symmetric keys.
  *
  * ### Example
  *
  * <code>
  * // Initialise
- * $keypair = new Key();
+ * $key = new Key();
  *
- * // Generate a new key pair
- * $keypair->generate();
+ * // Generate a new symmetric key
+ * $key->generate();
  *
- * // Fetch the text versions of the public and private keys.
- * $public_key = $keypair->getPublicKey();
- * $private_key = $keypair->getPrivateKey();
+ * // Fetch the binary version of the shared key
+ * $key = $key->getSharedKey();
  * </code>
  *
  * @link http://php.net/manual/en/ref.openssl.php
@@ -33,28 +43,20 @@ use Delatbabel\ApiSecurity\Exceptions\SignatureException;
  */
 class Key
 {
-    /** @var int key length. Ideally this should be 2048, 1024 bit RSA keys are broken */
+    /** @var int key length. Ideally this should be 32 (characters) */
     protected $length;
 
-    /** @var  string key type, at the moment only OPENSSL_KEYTYPE_RSA is supported */
-    protected $type;
-
-    /** @var  string text of the private key */
-    protected $private_key_text;
-
-    /** @var  string text of the public key */
-    protected $public_key_text;
+    /** @var  string binary representation of the shared key */
+    protected $shared_key;
 
     /**
      * Key constructor.
      *
      * @param int $length
-     * @param int $type
      */
-    public function __construct($length=2048, $type=OPENSSL_KEYTYPE_RSA)
+    public function __construct($length=32)
     {
         $this->setLength($length);
-        $this->setType($type);
     }
 
     /**
@@ -63,7 +65,7 @@ class Key
      * @param int $length
      * @return Key provides a fluent interface.
      */
-    public function setLength($length=2048)
+    public function setLength($length=32)
     {
         $this->length = $length;
         return $this;
@@ -80,42 +82,20 @@ class Key
     }
 
     /**
-     * Set the type of keys to be generated.
+     * Set the shared key
      *
-     * @param int $type
+     * @param string $key
      * @return Key provides a fluent interface.
      */
-    public function setType($type=OPENSSL_KEYTYPE_RSA)
-    {
-        $this->type = $type;
-        return $this;
-    }
-
-    /**
-     * Return the type of keys that will be generated.
-     *
-     * @return int
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
-     * Set the public key text
-     *
-     * @param string $public_key
-     * @return Key provides a fluent interface.
-     */
-    public function setPublicKey($public_key)
+    public function setSharedKey($key)
     {
         // If the public key is a file name then convert it to
         // the contents of the file (which should be an RSA public
         // key in PEM format)
-        if (file_exists($public_key)) {
-            $this->public_key_text = file_get_contents($public_key);
-        } elseif (! empty($public_key)) {
-            $this->public_key_text = $public_key;
+        if (file_exists($key)) {
+            $this->shared_key = file_get_contents($key);
+        } elseif (! empty($key)) {
+            $this->shared_key = $key;
         }
         return $this;
     }
@@ -125,113 +105,20 @@ class Key
      *
      * @return string
      */
-    public function getPublicKey()
+    public function getSharedKey()
     {
-        return $this->public_key_text;
+        return $this->shared_key;
     }
 
     /**
-     * Set the private key text
-     *
-     * @param string $private_key
-     * @return Key provides a fluent interface.
-     */
-    public function setPrivateKey($private_key)
-    {
-        // If the private key is a file name then convert it to
-        // the contents of the file (which should be an RSA private
-        // key in PEM format)
-        if (file_exists($private_key)) {
-            $this->private_key_text = file_get_contents($private_key);
-        } elseif (! empty($private_key)) {
-            $this->private_key_text = $private_key;
-        }
-        return $this;
-    }
-
-    /**
-     * Get the private key text
-     *
-     * @return string
-     */
-    public function getPrivateKey()
-    {
-        return $this->private_key_text;
-    }
-
-    /**
-     * Create the key pair.
+     * Create the shared key
      *
      * @return Key provides a fluent interface
      */
     public function generate()
     {
-        // Make a new key pair
-        /** @var resource $private_key */
-        $private_key = openssl_pkey_new([
-            'private_key_bits'      => 2048,
-            'private_key_type'      => OPENSSL_KEYTYPE_RSA,
-            'encrypt_key'           => false,
-        ]);
-
-        // Export the key pair to a string
-        $this->private_key_text = '';
-        openssl_pkey_export($private_key, $this->private_key_text);
-
-        // Get the public key
-        $public_key_data = openssl_pkey_get_details($private_key);
-        $this->public_key_text = $public_key_data['key'];
-
-        return $this;
-    }
-
-    /**
-     * Store the keys into files.
-     *
-     * @param string $public_key_file
-     * @param string $private_key_file
-     * @return Key provides a fluent interface
-     */
-    public function store($public_key_file, $private_key_file)
-    {
-        file_put_contents($public_key_file, $this->public_key_text);
-        file_put_contents($private_key_file, $this->private_key_text);
-        chmod($private_key_file, 0600);
-
-        return $this;
-    }
-
-    /**
-     * Load the keys from files or strings.
-     *
-     * It's not required to provide both the private and the public
-     * key. The key will be initialised with whichever or both keys
-     * are provided.
-     *
-     * @param string $public_key file name or contents
-     * @param string $private_key file name or contents
-     * @return Key provides a fluent interface
-     */
-    public function load($public_key='', $private_key='')
-    {
-        // If the private key is a file name then convert it to
-        // the contents of the file (which should be an RSA private
-        // key in PEM format)
-        if (file_exists($private_key)) {
-            $this->private_key_text = file_get_contents($private_key);
-        } elseif (! empty($private_key)) {
-            $this->private_key_text = $private_key;
-        }
-
-        // If the public key is a file name then convert it to
-        // the contents of the file (which should be an RSA public
-        // key in PEM format)
-        if (file_exists($public_key)) {
-            $this->public_key_text = file_get_contents($public_key);
-        } elseif (! empty($public_key)) {
-            $this->public_key_text = $public_key;
-        }
-
+        // Make a new key
+        $this->setSharedKey(openssl_random_pseudo_bytes($this->getLength()));
         return $this;
     }
 
@@ -241,23 +128,11 @@ class Key
      * Returns null if there was a problem signing the data (key not valid, etc)
      *
      * @param string $data_to_sign
-     * @return null|string
+     * @return string
      */
     public function sign($data_to_sign)
     {
-        // Get the private key resource from the private key data
-        $private_key = openssl_pkey_get_private($this->private_key_text);
-        if ($private_key === false) {
-            return null;
-        }
-
-        // Create the base64 encoded copy of the signature.
-        $signature = '';
-        if (! openssl_sign($data_to_sign, $signature, $private_key, OPENSSL_ALGO_SHA256)) {
-            return null;
-        }
-        $base64_signature = base64_encode($signature);
-
+        $base64_signature = base64_encode(hash_hmac("sha256", $data_to_sign, $this->getSharedKey(), true));
         return $base64_signature;
     }
 
@@ -267,29 +142,11 @@ class Key
      * @param string $data_to_verify
      * @param string $base64_signature
      * @return bool
-     * @throws SignatureException
      */
     public function verify($data_to_verify, $base64_signature)
     {
-        // Decode the signature
-        $signature = base64_decode($base64_signature);
-
-        // Get the public key, used for verifying signatures
-        $public_key = $this->public_key_text;
-
-        // Verify the signature
-        $signature_verify = openssl_verify($data_to_verify, $signature, $public_key, OPENSSL_ALGO_SHA256);
-        switch ($signature_verify) {
-            case 1:
-                return true;
-                break;
-            case 0:
-                return false;
-                break;
-            case -1:
-            default:
-                throw new SignatureException('There was an error verifying the signature');
-                break;
-        }
+        $calculated_signature = base64_encode(hash_hmac("sha256", $data_to_verify, $this->getSharedKey(), true));
+        $verify = hash_equals($calculated_signature, $base64_signature);
+        return $verify;
     }
 }
