@@ -5,8 +5,21 @@ other HTTP based APIs, where the authentication process typically involves a sha
 secret key, perhaps a public/private key pair, rather than username/password/cookie
 type security more commonly found in web applications.
 
-I am getting close to an 1.0 release -- more functionality is to be added but the
-interface should be reasonably stable now.
+## Recent Changes
+
+### v1.0
+
+First stable release.
+
+### v1.1
+
+Added caching and verification of nonces (server and client side).
+
+### v1.2
+
+Added a new Key generator class to generate and store shared keys.  The existing Key
+class (which handled public/private key pairs) has been renamed to KeyPair -- so if
+you were using that class directly then use it as KeyPair instead of Key.
 
 ## Features
 
