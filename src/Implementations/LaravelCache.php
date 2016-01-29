@@ -1,17 +1,16 @@
 <?php
 /**
- * Class LaravelCache
+ * Class LaravelCache.
  *
  * @author del
  */
-
 namespace Delatbabel\ApiSecurity\Implementations;
 
 use Delatbabel\ApiSecurity\Interfaces\CacheInterface;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Class LaravelCache
+ * Class LaravelCache.
  *
  * Implementation of CacheInterface that will work with Laravel applications.
  */

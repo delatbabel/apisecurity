@@ -1,16 +1,15 @@
 <?php
 /**
- * Class MemcachedCache
+ * Class MemcachedCache.
  *
  * @author del
  */
-
 namespace Delatbabel\ApiSecurity\Implementations;
 
 use Delatbabel\ApiSecurity\Interfaces\CacheInterface;
 
 /**
- * Class MemcachedCache
+ * Class MemcachedCache.
  *
  * Implementation of CacheInterface that will work with the native Memcached
  * interface in PHP.
@@ -20,22 +19,22 @@ class MemcachedCache implements CacheInterface
     /** @var \Memcached The memcached instance */
     protected $memcached;
 
-    /** @var  integer Cache expiry time */
+    /** @var  int Cache expiry time */
     protected $expiry_time;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param integer $expiry_time The cache expiry time in minutes.
-     * @param string $server name or IP address of the memcached server
-     * @param integer $port the port number of the memcached server.
+     * @param int    $expiry_time The cache expiry time in minutes.
+     * @param string $server      name or IP address of the memcached server
+     * @param int    $port        the port number of the memcached server.
      */
-    public function __construct($expiry_time = 60, $server='localhost', $port=11211)
+    public function __construct($expiry_time = 60, $server = 'localhost', $port = 11211)
     {
         $this->memcached = new \Memcached();
-        $servers = array(
-            array($server, $port)
-        );
+        $servers = [
+            [$server, $port],
+        ];
         $this->memcached->addServers($servers);
         $this->expiry_time = $expiry_time;
     }

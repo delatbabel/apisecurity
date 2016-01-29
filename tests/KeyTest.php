@@ -1,20 +1,18 @@
 <?php
 /**
- * Class KeyTest
+ * Class KeyTest.
  *
  * @author del
  */
-
 use Delatbabel\ApiSecurity\Generators\Key;
 
 /**
- * Class KeyTest
+ * Class KeyTest.
  *
  * Test case for Key class.
  */
 class KeyTest extends PHPUnit_Framework_TestCase
 {
-
     public function testCreateKey()
     {
         $key = new Key();

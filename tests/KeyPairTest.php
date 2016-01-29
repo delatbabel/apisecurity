@@ -1,14 +1,13 @@
 <?php
 /**
- * Class KeyPairTest
+ * Class KeyPairTest.
  *
  * @author del
  */
-
 use Delatbabel\ApiSecurity\Generators\KeyPair;
 
 /**
- * Class KeyPairTest
+ * Class KeyPairTest.
  *
  * Test case for KeyPair class.
  */
@@ -19,8 +18,8 @@ class KeyPairTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->pubkey = __DIR__ . '/data/public.pem';
-        $this->privkey = __DIR__ . '/data/private.pem';
+        $this->pubkey = __DIR__.'/data/public.pem';
+        $this->privkey = __DIR__.'/data/private.pem';
     }
 
     public function testCreateKey()
