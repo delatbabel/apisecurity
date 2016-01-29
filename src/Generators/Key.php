@@ -1,27 +1,30 @@
 <?php
 /**
- * Class Key
+ * Class Key.
  *
  * @author del
  */
-
 namespace Delatbabel\ApiSecurity\Generators;
 
-if (! function_exists('hash_equals')) {
-    function hash_equals($str1, $str2) {
+if (!function_exists('hash_equals')) {
+    function hash_equals($str1, $str2)
+    {
         if (strlen($str1) != strlen($str2)) {
             return false;
         } else {
             $res = $str1 ^ $str2;
             $ret = 0;
-            for ($i = strlen($res) - 1; $i >= 0; $i--) $ret |= ord($res[$i]);
+            for ($i = strlen($res) - 1; $i >= 0; $i--) {
+                $ret |= ord($res[$i]);
+            }
+
             return !$ret;
         }
     }
 }
 
 /**
- * Class Key
+ * Class Key.
  *
  * Handles the generation of symmetric keys.
  *
@@ -54,7 +57,7 @@ class Key
      *
      * @param int $length
      */
-    public function __construct($length=32)
+    public function __construct($length = 32)
     {
         $this->setLength($length);
     }
@@ -63,11 +66,13 @@ class Key
      * Set the length of keys to be generated.
      *
      * @param int $length
+     *
      * @return Key provides a fluent interface.
      */
-    public function setLength($length=32)
+    public function setLength($length = 32)
     {
         $this->length = $length;
+
         return $this;
     }
 
@@ -82,9 +87,10 @@ class Key
     }
 
     /**
-     * Set the shared key
+     * Set the shared key.
      *
      * @param string $key
+     *
      * @return Key provides a fluent interface.
      */
     public function setSharedKey($key)
@@ -94,14 +100,15 @@ class Key
         // key in PEM format)
         if (file_exists($key)) {
             $this->shared_key = file_get_contents($key);
-        } elseif (! empty($key)) {
+        } elseif (!empty($key)) {
             $this->shared_key = $key;
         }
+
         return $this;
     }
 
     /**
-     * Get the public key text
+     * Get the public key text.
      *
      * @return string
      */
@@ -111,7 +118,7 @@ class Key
     }
 
     /**
-     * Create the shared key
+     * Create the shared key.
      *
      * @return Key provides a fluent interface
      */
@@ -119,6 +126,7 @@ class Key
     {
         // Make a new key
         $this->setSharedKey(openssl_random_pseudo_bytes($this->getLength()));
+
         return $this;
     }
 
@@ -128,11 +136,13 @@ class Key
      * Returns null if there was a problem signing the data (key not valid, etc)
      *
      * @param string $data_to_sign
+     *
      * @return string
      */
     public function sign($data_to_sign)
     {
-        $base64_signature = base64_encode(hash_hmac("sha256", $data_to_sign, $this->getSharedKey(), true));
+        $base64_signature = base64_encode(hash_hmac('sha256', $data_to_sign, $this->getSharedKey(), true));
+
         return $base64_signature;
     }
 
@@ -141,12 +151,14 @@ class Key
      *
      * @param string $data_to_verify
      * @param string $base64_signature
+     *
      * @return bool
      */
     public function verify($data_to_verify, $base64_signature)
     {
-        $calculated_signature = base64_encode(hash_hmac("sha256", $data_to_verify, $this->getSharedKey(), true));
+        $calculated_signature = base64_encode(hash_hmac('sha256', $data_to_verify, $this->getSharedKey(), true));
         $verify = hash_equals($calculated_signature, $base64_signature);
+
         return $verify;
     }
 }

@@ -1,16 +1,15 @@
 <?php
 /**
- * Class KeyPair
+ * Class KeyPair.
  *
  * @author del
  */
-
 namespace Delatbabel\ApiSecurity\Generators;
 
 use Delatbabel\ApiSecurity\Exceptions\SignatureException;
 
 /**
- * Class KeyPair
+ * Class KeyPair.
  *
  * Handles the generation of public / private key pairs.
  *
@@ -51,7 +50,7 @@ class KeyPair
      * @param int $length
      * @param int $type
      */
-    public function __construct($length=2048, $type=OPENSSL_KEYTYPE_RSA)
+    public function __construct($length = 2048, $type = OPENSSL_KEYTYPE_RSA)
     {
         $this->setLength($length);
         $this->setType($type);
@@ -61,11 +60,13 @@ class KeyPair
      * Set the length of keys to be generated.
      *
      * @param int $length
+     *
      * @return KeyPair provides a fluent interface.
      */
-    public function setLength($length=2048)
+    public function setLength($length = 2048)
     {
         $this->length = $length;
+
         return $this;
     }
 
@@ -83,11 +84,13 @@ class KeyPair
      * Set the type of keys to be generated.
      *
      * @param int $type
+     *
      * @return KeyPair provides a fluent interface.
      */
-    public function setType($type=OPENSSL_KEYTYPE_RSA)
+    public function setType($type = OPENSSL_KEYTYPE_RSA)
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -102,9 +105,10 @@ class KeyPair
     }
 
     /**
-     * Set the public key text
+     * Set the public key text.
      *
      * @param string $public_key
+     *
      * @return KeyPair provides a fluent interface.
      */
     public function setPublicKey($public_key)
@@ -114,14 +118,15 @@ class KeyPair
         // key in PEM format)
         if (file_exists($public_key)) {
             $this->public_key_text = file_get_contents($public_key);
-        } elseif (! empty($public_key)) {
+        } elseif (!empty($public_key)) {
             $this->public_key_text = $public_key;
         }
+
         return $this;
     }
 
     /**
-     * Get the public key text
+     * Get the public key text.
      *
      * @return string
      */
@@ -131,9 +136,10 @@ class KeyPair
     }
 
     /**
-     * Set the private key text
+     * Set the private key text.
      *
      * @param string $private_key
+     *
      * @return KeyPair provides a fluent interface.
      */
     public function setPrivateKey($private_key)
@@ -143,14 +149,15 @@ class KeyPair
         // key in PEM format)
         if (file_exists($private_key)) {
             $this->private_key_text = file_get_contents($private_key);
-        } elseif (! empty($private_key)) {
+        } elseif (!empty($private_key)) {
             $this->private_key_text = $private_key;
         }
+
         return $this;
     }
 
     /**
-     * Get the private key text
+     * Get the private key text.
      *
      * @return string
      */
@@ -190,6 +197,7 @@ class KeyPair
      *
      * @param string $public_key_file
      * @param string $private_key_file
+     *
      * @return KeyPair provides a fluent interface
      */
     public function store($public_key_file, $private_key_file)
@@ -208,18 +216,19 @@ class KeyPair
      * key. The key will be initialised with whichever or both keys
      * are provided.
      *
-     * @param string $public_key file name or contents
+     * @param string $public_key  file name or contents
      * @param string $private_key file name or contents
+     *
      * @return KeyPair provides a fluent interface
      */
-    public function load($public_key='', $private_key='')
+    public function load($public_key = '', $private_key = '')
     {
         // If the private key is a file name then convert it to
         // the contents of the file (which should be an RSA private
         // key in PEM format)
         if (file_exists($private_key)) {
             $this->private_key_text = file_get_contents($private_key);
-        } elseif (! empty($private_key)) {
+        } elseif (!empty($private_key)) {
             $this->private_key_text = $private_key;
         }
 
@@ -228,7 +237,7 @@ class KeyPair
         // key in PEM format)
         if (file_exists($public_key)) {
             $this->public_key_text = file_get_contents($public_key);
-        } elseif (! empty($public_key)) {
+        } elseif (!empty($public_key)) {
             $this->public_key_text = $public_key;
         }
 
@@ -241,6 +250,7 @@ class KeyPair
      * Returns null if there was a problem signing the data (key not valid, etc)
      *
      * @param string $data_to_sign
+     *
      * @return null|string
      */
     public function sign($data_to_sign)
@@ -248,13 +258,13 @@ class KeyPair
         // Get the private key resource from the private key data
         $private_key = openssl_pkey_get_private($this->private_key_text);
         if ($private_key === false) {
-            return null;
+            return;
         }
 
         // Create the base64 encoded copy of the signature.
         $signature = '';
-        if (! openssl_sign($data_to_sign, $signature, $private_key, OPENSSL_ALGO_SHA256)) {
-            return null;
+        if (!openssl_sign($data_to_sign, $signature, $private_key, OPENSSL_ALGO_SHA256)) {
+            return;
         }
         $base64_signature = base64_encode($signature);
 
@@ -266,8 +276,10 @@ class KeyPair
      *
      * @param string $data_to_verify
      * @param string $base64_signature
-     * @return bool
+     *
      * @throws SignatureException
+     *
+     * @return bool
      */
     public function verify($data_to_verify, $base64_signature)
     {

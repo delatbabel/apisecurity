@@ -1,14 +1,13 @@
 <?php
 /**
- * Interface CacheInterface
+ * Interface CacheInterface.
  *
  * @author del
  */
-
 namespace Delatbabel\ApiSecurity\Interfaces;
 
 /**
- * Interface CacheInterface
+ * Interface CacheInterface.
  *
  * Defines the interface that applications need to provide to ApiSecurity for setting
  * and getting items from a cache.
@@ -28,6 +27,7 @@ interface CacheInterface
      *
      * @param $key
      * @param $value
+     *
      * @return mixed
      */
     public function add($key, $value);
@@ -39,6 +39,7 @@ interface CacheInterface
      * not exist in the cache.
      *
      * @param $key
+     *
      * @return mixed
      */
     public function get($key);

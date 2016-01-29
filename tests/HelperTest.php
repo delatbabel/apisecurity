@@ -1,19 +1,18 @@
 <?php
 /**
- * Class HelperTest
+ * Class HelperTest.
  *
  * @author del
  */
-
+use Delatbabel\ApiSecurity\Exceptions\NonceException;
+use Delatbabel\ApiSecurity\Exceptions\SignatureException;
 use Delatbabel\ApiSecurity\Generators\KeyPair;
 use Delatbabel\ApiSecurity\Helpers\Client;
 use Delatbabel\ApiSecurity\Helpers\Server;
 use Delatbabel\ApiSecurity\Implementations\MemcachedCache;
-use Delatbabel\ApiSecurity\Exceptions\NonceException;
-use Delatbabel\ApiSecurity\Exceptions\SignatureException;
 
 /**
- * Class HelperTest
+ * Class HelperTest.
  *
  * Test case for Helper classes.
  */
@@ -25,8 +24,8 @@ class HelperTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->pubkey = __DIR__ . '/data/public.pem';
-        $this->privkey = __DIR__ . '/data/private.pem';
+        $this->pubkey = __DIR__.'/data/public.pem';
+        $this->privkey = __DIR__.'/data/private.pem';
         $this->sharedkey = 'i9DEgKMbGayMEAusiYswcex1LHfEsodb';
     }
 

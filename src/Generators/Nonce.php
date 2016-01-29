@@ -1,14 +1,13 @@
 <?php
 /**
- * Class Nonce
+ * Class Nonce.
  *
  * @author del
  */
-
 namespace Delatbabel\ApiSecurity\Generators;
 
 /**
- * Class Nonce
+ * Class Nonce.
  *
  * This class generates client or server side nonces.
  *
@@ -33,7 +32,7 @@ class Nonce
     /** @var string base64 encoded (7 bit) representation of nonce */
     protected $nonce;
 
-    public function __construct($length=16)
+    public function __construct($length = 16)
     {
         $this->setLength($length);
         $this->generate();
@@ -43,11 +42,13 @@ class Nonce
      * Set the length of nonces to be generated.
      *
      * @param int $length
+     *
      * @return Nonce provides a fluent interface.
      */
-    public function setLength($length=16)
+    public function setLength($length = 16)
     {
         $this->length = $length;
+
         return $this;
     }
 
@@ -75,6 +76,7 @@ class Nonce
         }
 
         $this->nonce = base64_encode($this->bytes);
+
         return $this;
     }
 

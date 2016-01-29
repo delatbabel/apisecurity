@@ -1,14 +1,13 @@
 <?php
 /**
- * Class NonceTest
+ * Class NonceTest.
  *
  * @author del
  */
-
 use Delatbabel\ApiSecurity\Generators\Nonce;
 
 /**
- * Class NonceTest
+ * Class NonceTest.
  *
  * Test case for Nonce class.
  */
