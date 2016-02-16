@@ -1,21 +1,20 @@
 <?php
 /**
- * Class Server
+ * Class Server.
  *
  * @author del
  */
-
 namespace Delatbabel\ApiSecurity\Helpers;
 
 use Delatbabel\ApiSecurity\Exceptions\NonceException;
 use Delatbabel\ApiSecurity\Exceptions\SignatureException;
-use Delatbabel\ApiSecurity\Generators\KeyPair;
 use Delatbabel\ApiSecurity\Generators\Key;
+use Delatbabel\ApiSecurity\Generators\KeyPair;
 use Delatbabel\ApiSecurity\Generators\Nonce;
 use Delatbabel\ApiSecurity\Interfaces\CacheInterface;
 
 /**
- * Class Server
+ * Class Server.
  *
  * Long description of class goes here.  What is this for?
  *
@@ -55,7 +54,7 @@ class Server
      * @param KeyPair|null        $keypair
      * @param CacheInterface|null $cache
      */
-    public function __construct(KeyPair $keypair=null, CacheInterface $cache=null)
+    public function __construct(KeyPair $keypair = null, CacheInterface $cache = null)
     {
         if (empty($keypair)) {
             $this->keypair = new KeyPair();
@@ -67,14 +66,16 @@ class Server
     }
 
     /**
-     * Set the public key text
+     * Set the public key text.
      *
      * @param string $key
+     *
      * @return Server provides a fluent interface.
      */
     public function setPublicKey($key)
     {
         $this->keypair->setPublicKey($key);
+
         return $this;
     }
 
@@ -82,11 +83,13 @@ class Server
      * Set the shared key used in generating HMACs.
      *
      * @param $key
+     *
      * @return Client provides a fluent interface.
      */
     public function setSharedKey($key)
     {
         $this->sharedKey = $key;
+
         return $this;
     }
 
@@ -94,28 +97,31 @@ class Server
      * Generate a one time only server nonce.
      *
      * @param string $ip_address The client IP address where this nonce will be sent
+     *
      * @return string
      */
-    public function createNonce($ip_address='127.0.0.1')
+    public function createNonce($ip_address = '127.0.0.1')
     {
         // Make a nonce
         $this->snonce = new Nonce();
         $snonce = $this->snonce->getNonce();
         $this->recordServerNonce($snonce, $ip_address);
+
         return $snonce;
     }
 
     /**
-     * Verifies and stores a client nonce
+     * Verifies and stores a client nonce.
      *
      * Throws a NonceException if the nonce does not verify (has been used).
      *
      * @param string $cnonce The client nonce key.
+     *
      * @throws NonceException
      */
     public function verifyClientNonce($cnonce)
     {
-        $cnonce_cache_key = 'cnonce__' . $cnonce;
+        $cnonce_cache_key = 'cnonce__'.$cnonce;
 
         if (empty($this->cache)) {
             return;
@@ -130,7 +136,7 @@ class Server
     }
 
     /**
-     * Verifies a server nonce
+     * Verifies a server nonce.
      *
      * This ensures that the server nonce has been used once and once only,
      * and only by the same IP address that it was provided to.
@@ -138,13 +144,14 @@ class Server
      * Throws a NonceException if the nonce does not verify (has been used
      * elsewhere or has never been used).
      *
-     * @param string $snonce The server nonce key.
+     * @param string $snonce     The server nonce key.
      * @param string $ip_address
+     *
      * @throws NonceException
      */
-    public function verifyServerNonce($snonce, $ip_address='127.0.0.1')
+    public function verifyServerNonce($snonce, $ip_address = '127.0.0.1')
     {
-        $snonce_cache_key = 'snonce__' . $snonce;
+        $snonce_cache_key = 'snonce__'.$snonce;
 
         if (empty($this->cache)) {
             return;
@@ -162,16 +169,16 @@ class Server
     }
 
     /**
-     * Records a server nonce
+     * Records a server nonce.
      *
      * This records a server nonce after creation.
      *
-     * @param string $snonce The server nonce key.
+     * @param string $snonce     The server nonce key.
      * @param string $ip_address
      */
-    public function recordServerNonce($snonce, $ip_address='127.0.0.1')
+    public function recordServerNonce($snonce, $ip_address = '127.0.0.1')
     {
-        $snonce_cache_key = 'snonce__' . $snonce;
+        $snonce_cache_key = 'snonce__'.$snonce;
 
         if (empty($this->cache)) {
             return;
@@ -200,11 +207,13 @@ class Server
      *
      * @param array  $request_data
      * @param string $ip_address
-     * @return void
+     *
      * @throws SignatureException
      * @throws NonceException
+     *
+     * @return void
      */
-    public function verifySignature(array $request_data, $ip_address='127.0.0.1')
+    public function verifySignature(array $request_data, $ip_address = '127.0.0.1')
     {
         if (empty($request_data['sig'])) {
             throw new SignatureException('No signature was present on the request data');
@@ -218,7 +227,7 @@ class Server
 
         // Verify the signature
         $verify = $this->keypair->verify($data_to_verify, $base64_signature);
-        if (! $verify) {
+        if (!$verify) {
             throw new SignatureException('The signature on the request data did not verify');
         }
 
@@ -231,7 +240,7 @@ class Server
 
         // Verify the server nonce if present.  Note that the client must request
         // this.
-        if (! empty($request_data['snonce'])) {
+        if (!empty($request_data['snonce'])) {
             $this->verifyServerNonce($request_data['snonce'], $ip_address);
         }
     }
@@ -251,13 +260,15 @@ class Server
      *
      * An exception is thrown if the signature did not verify or was not present.
      *
-     * @param array $request_data
+     * @param array  $request_data
      * @param string $ip_address
-     * @return void
+     *
      * @throws SignatureException
      * @throws NonceException
+     *
+     * @return void
      */
-    public function verifyHMAC(array $request_data, $ip_address='127.0.0.1')
+    public function verifyHMAC(array $request_data, $ip_address = '127.0.0.1')
     {
         if (empty($request_data['hmac'])) {
             throw new SignatureException('No HMAC was present on the request data');
@@ -282,13 +293,13 @@ class Server
         // Verify the signature.
         $verify = $sharedKey->verify($data_to_verify, $supplied_hmac);
 
-        if (! $verify) {
+        if (!$verify) {
             throw new SignatureException('The HMAC on the request data did not verify');
         }
 
         // Verify the server nonce if present.  Note that the client must request
         // this.
-        if (! empty($request_data['snonce'])) {
+        if (!empty($request_data['snonce'])) {
             $this->verifyServerNonce($request_data['snonce'], $ip_address);
         }
     }

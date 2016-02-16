@@ -1,19 +1,17 @@
 <?php
 /**
- * Class Client
+ * Class Client.
  *
  * @author del
  */
-
 namespace Delatbabel\ApiSecurity\Helpers;
 
-use Delatbabel\ApiSecurity\Generators\KeyPair;
 use Delatbabel\ApiSecurity\Generators\Key;
+use Delatbabel\ApiSecurity\Generators\KeyPair;
 use Delatbabel\ApiSecurity\Generators\Nonce;
 
-
 /**
- * Class Client
+ * Class Client.
  *
  * Helper functions for API clients
  *
@@ -47,7 +45,7 @@ class Client
      *
      * @param KeyPair|null $key
      */
-    public function __construct(KeyPair $key=null)
+    public function __construct(KeyPair $key = null)
     {
         if (empty($key)) {
             $this->key = new KeyPair();
@@ -57,14 +55,16 @@ class Client
     }
 
     /**
-     * Set the private key text
+     * Set the private key text.
      *
      * @param string $key
+     *
      * @return Client provides a fluent interface.
      */
     public function setPrivateKey($key)
     {
         $this->key->setPrivateKey($key);
+
         return $this;
     }
 
@@ -72,11 +72,13 @@ class Client
      * Set the shared key used in generating HMACs.
      *
      * @param $key
+     *
      * @return Client provides a fluent interface.
      */
     public function setSharedKey($key)
     {
         $this->sharedKey = $key;
+
         return $this;
     }
 
@@ -89,6 +91,7 @@ class Client
     {
         // Make a nonce
         $this->cnonce = new Nonce();
+
         return $this->cnonce->getNonce();
     }
 
@@ -117,6 +120,7 @@ class Client
      * Returns the signature, or null if there was no signature.
      *
      * @param array $request_data
+     *
      * @return string|null
      */
     public function createSignature(array &$request_data)
@@ -129,7 +133,7 @@ class Client
 
         // Create the base64 encoded copy of the signature.
         $base64_signature = $this->key->sign($data_to_sign);
-        if (! empty($base64_signature)) {
+        if (!empty($base64_signature)) {
             $request_data['sig'] = $base64_signature;
         }
 
@@ -159,6 +163,7 @@ class Client
      * Returns the HMAC
      *
      * @param array $request_data
+     *
      * @return string
      */
     public function createHMAC(array &$request_data)
