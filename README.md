@@ -28,10 +28,6 @@ you were using that class directly then use it as KeyPair instead of Key.
 * Signing API requests
 * Verifying the signature of API requests
 
-## TODO
-
-* Nonce verification, using a cache store
-
 ## Installing
 
 ```
@@ -54,7 +50,10 @@ $nonce = new Nonce();
 echo "Nonce is " . $nonce->getNonce() . "\n";
 ```
 
-### Signature Calculation
+### Signature Calculation (Client)
+
+Signatures use an RSA key pair.  To generate the signature requires knowledge of the private
+key from the key pair.
 
 ```php
 $client = new Client();
@@ -64,7 +63,27 @@ $client->setPrivateKey($private_key_data);
 $client->createSignature($request_data);
 ```
 
-### Signature Verification
+A client nonce will be generated and stored as `$request_data['cnonce']`.  A signature will
+be generated and stored as `$request_data['sig']`.
+
+### HMAC Calculation (Client)
+
+HMACs use a shared key.
+
+```php
+$client = new Client();
+// $shared_key_data can be the file name of the shared key or the text of the key itself.
+// This should be known to both the client and server.
+$client->setSharedKey($shared_key_data);
+$client->createHMAC($request_data);
+```
+
+A client nonce will be generated and stored as `$request_data['cnonce']`.  An HMAC will
+be generated and stored as `$request_data['hmac']`.
+
+### Signature Verification (Server)
+
+Verification of the signature requires knowledge of the client's public key.
 
 ```php
 $server = new Server();
@@ -73,7 +92,86 @@ $server->setPublicKey($public_key);
 $server->verifySignature($request_data);
 ```
 
-Take a look at the class docblocks and the test cases for more examples of use.
+A SignatureException is thrown if the signature is not valid.
+
+### HMAC Verification (Server)
+
+Verification of the HMAC requires knowledget of the shared key.
+
+```php
+$server = new Server();
+// $shared_key can be the file name of the key or the text of the key itself.
+$server->setSharedKey($shared_key);
+$server->verifyHMAC($request_data);
+```
+
+A SignatureException is thrown if the HMAC is not valid.
+
+### Server Nonce Generation (Server)
+
+This step is optional, and ties a particular request to a client's IP address.  It requires
+an extra API call as follows:
+
+```
+    Client                           Server
+      |                                |
+      |   Request server nonce         |
+      | --------------------------->   |
+      |                                |
+      |   Server nonce provided        |
+      | <---------------------------   |
+      |                                |
+      |                                |
+      |   API call including snonce    |
+      | --------------------------->   |
+      |                                |
+      |                         Verify |
+      |                                |
+      |   API response                 |
+      | <---------------------------   |
+      |                                |
+```
+
+On the server side, server nonce creation or verification can be achieved using any class that
+implements \Delatbabel\ApiSecurity\Interfaces\CacheInterface.  There are two reference classes
+provided within the \Delatbabel\ApiSecurity\Implementations namespace:
+
+* LaravelCache -- uses the Laravel Cache facade for add/get.
+* MemcachedCache -- uses the PHP native Memcached class to provide add/get.
+
+To perform nonce verification, initialise the Server class with an object that implements
+the CacheInterface interface, for example:
+
+```php
+$server = new Server(null, new MemcachedCache());
+```
+
+To create the nonce, this is the correct call:
+
+```php
+$server->createNonce($ip_address);
+```
+
+`$ip_address` is the client's IP address, e.g. from the $_SERVER array or similar.
+
+### Nonce Verification (Server)
+
+On the server side, client nonce verification requires a server object initialised with a cache
+object as per Nonce creation, above, for example:
+
+```php
+$server = new Server(null, new MemcachedCache());
+```
+
+Nonce verification rules are as follows:
+
+* A client nonce must be present and must never have been used.
+* A server nonce may be present. If it is present it must have been created on the server for the
+  specific IP address of the client.
+
+A NonceException is thrown if either the client nonce or the server nonce are not valid.
+
+Nonce verification happens automatically during the `verifySignature` or `verifyHMAC` calls.
 
 ## Appropriate Frameworks
 
