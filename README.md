@@ -156,7 +156,7 @@ $server->createNonce($ip_address);
 
 ### Nonce Verification (Server)
 
-On the server side, client nonce verification requires a server object initialised with a cache
+On the server side, nonce verification requires a server object initialised with a cache
 object as per Nonce creation, above, for example:
 
 ```php
