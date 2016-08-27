@@ -104,7 +104,7 @@ class Server
     {
         // Make a nonce
         $this->snonce = new Nonce();
-        $snonce = $this->snonce->getNonce();
+        $snonce       = $this->snonce->getNonce();
         $this->recordServerNonce($snonce, $ip_address);
 
         return $snonce;
@@ -227,7 +227,7 @@ class Server
 
         // Verify the signature
         $verify = $this->keypair->verify($data_to_verify, $base64_signature);
-        if (!$verify) {
+        if (! $verify) {
             throw new SignatureException('The signature on the request data did not verify');
         }
 
@@ -240,7 +240,7 @@ class Server
 
         // Verify the server nonce if present.  Note that the client must request
         // this.
-        if (!empty($request_data['snonce'])) {
+        if (! empty($request_data['snonce'])) {
             $this->verifyServerNonce($request_data['snonce'], $ip_address);
         }
     }
@@ -293,13 +293,13 @@ class Server
         // Verify the signature.
         $verify = $sharedKey->verify($data_to_verify, $supplied_hmac);
 
-        if (!$verify) {
+        if (! $verify) {
             throw new SignatureException('The HMAC on the request data did not verify');
         }
 
         // Verify the server nonce if present.  Note that the client must request
         // this.
-        if (!empty($request_data['snonce'])) {
+        if (! empty($request_data['snonce'])) {
             $this->verifyServerNonce($request_data['snonce'], $ip_address);
         }
     }
