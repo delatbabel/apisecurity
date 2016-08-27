@@ -32,7 +32,7 @@ class MemcachedCache implements CacheInterface
     public function __construct($expiry_time = 60, $server = 'localhost', $port = 11211)
     {
         $this->memcached = new \Memcached();
-        $servers = [
+        $servers         = [
             [$server, $port],
         ];
         $this->memcached->addServers($servers);
