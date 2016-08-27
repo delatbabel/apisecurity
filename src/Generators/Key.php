@@ -6,7 +6,7 @@
  */
 namespace Delatbabel\ApiSecurity\Generators;
 
-if (!function_exists('hash_equals')) {
+if (! function_exists('hash_equals')) {
     function hash_equals($str1, $str2)
     {
         if (strlen($str1) != strlen($str2)) {
@@ -18,7 +18,7 @@ if (!function_exists('hash_equals')) {
                 $ret |= ord($res[$i]);
             }
 
-            return !$ret;
+            return ! $ret;
         }
     }
 }
@@ -100,7 +100,7 @@ class Key
         // key in PEM format)
         if (file_exists($key)) {
             $this->shared_key = file_get_contents($key);
-        } elseif (!empty($key)) {
+        } elseif (! empty($key)) {
             $this->shared_key = $key;
         }
 
@@ -157,7 +157,7 @@ class Key
     public function verify($data_to_verify, $base64_signature)
     {
         $calculated_signature = base64_encode(hash_hmac('sha256', $data_to_verify, $this->getSharedKey(), true));
-        $verify = hash_equals($calculated_signature, $base64_signature);
+        $verify               = hash_equals($calculated_signature, $base64_signature);
 
         return $verify;
     }

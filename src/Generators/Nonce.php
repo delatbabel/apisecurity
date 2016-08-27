@@ -69,7 +69,7 @@ class Nonce
      */
     public function generate()
     {
-        $usable = true;
+        $usable      = true;
         $this->bytes = openssl_random_pseudo_bytes($this->length, $usable);
         if ($usable === false) {
             // echo "Nonce is weak\n";

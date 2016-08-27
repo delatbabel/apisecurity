@@ -118,7 +118,7 @@ class KeyPair
         // key in PEM format)
         if (file_exists($public_key)) {
             $this->public_key_text = file_get_contents($public_key);
-        } elseif (!empty($public_key)) {
+        } elseif (! empty($public_key)) {
             $this->public_key_text = $public_key;
         }
 
@@ -149,7 +149,7 @@ class KeyPair
         // key in PEM format)
         if (file_exists($private_key)) {
             $this->private_key_text = file_get_contents($private_key);
-        } elseif (!empty($private_key)) {
+        } elseif (! empty($private_key)) {
             $this->private_key_text = $private_key;
         }
 
@@ -186,7 +186,7 @@ class KeyPair
         openssl_pkey_export($private_key, $this->private_key_text);
 
         // Get the public key
-        $public_key_data = openssl_pkey_get_details($private_key);
+        $public_key_data       = openssl_pkey_get_details($private_key);
         $this->public_key_text = $public_key_data['key'];
 
         return $this;
@@ -228,7 +228,7 @@ class KeyPair
         // key in PEM format)
         if (file_exists($private_key)) {
             $this->private_key_text = file_get_contents($private_key);
-        } elseif (!empty($private_key)) {
+        } elseif (! empty($private_key)) {
             $this->private_key_text = $private_key;
         }
 
@@ -237,7 +237,7 @@ class KeyPair
         // key in PEM format)
         if (file_exists($public_key)) {
             $this->public_key_text = file_get_contents($public_key);
-        } elseif (!empty($public_key)) {
+        } elseif (! empty($public_key)) {
             $this->public_key_text = $public_key;
         }
 
@@ -263,7 +263,7 @@ class KeyPair
 
         // Create the base64 encoded copy of the signature.
         $signature = '';
-        if (!openssl_sign($data_to_sign, $signature, $private_key, OPENSSL_ALGO_SHA256)) {
+        if (! openssl_sign($data_to_sign, $signature, $private_key, OPENSSL_ALGO_SHA256)) {
             return;
         }
         $base64_signature = base64_encode($signature);

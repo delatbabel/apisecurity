@@ -133,7 +133,7 @@ class Client
 
         // Create the base64 encoded copy of the signature.
         $base64_signature = $this->key->sign($data_to_sign);
-        if (!empty($base64_signature)) {
+        if (! empty($base64_signature)) {
             $request_data['sig'] = $base64_signature;
         }
 
@@ -179,7 +179,7 @@ class Client
         $sharedKey->setSharedKey($this->sharedKey);
 
         // Create the signature.
-        $base64_hmac = $sharedKey->sign($data_to_sign);
+        $base64_hmac          = $sharedKey->sign($data_to_sign);
         $request_data['hmac'] = $base64_hmac;
 
         return $base64_hmac;
