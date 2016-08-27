@@ -1,5 +1,10 @@
 # apisecurity
 
+[![Build Status](https://travis-ci.org/delatbabel/apisecurity.png?branch=master)](https://travis-ci.org/delatbabel/apisecurity)
+[![StyleCI](https://styleci.io/repos/50161241/shield)](https://styleci.io/repos/50161241)
+[![Latest Stable Version](https://poser.pugx.org/delatbabel/apisecurity/version.png)](https://packagist.org/packages/ddpro/apisecurity)
+[![Total Downloads](https://poser.pugx.org/delatbabel/apisecurity/d/total.png)](https://packagist.org/packages/delatbabel/apisecurity)
+
 API Security Helpers is designed for security of API connections, typically REST or
 other HTTP based APIs, where the authentication process typically involves a shared
 secret key, perhaps a public/private key pair, rather than username/password/cookie
